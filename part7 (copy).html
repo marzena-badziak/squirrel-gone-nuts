@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8" />
+	<title>Squirrel gone nuts!!!</title>
+	<script src="//cdn.jsdelivr.net/phaser/2.2.2/phaser.min.js"></script>
+	<script src="js/create.js"></script>
+	<style type="text/css">
+		body {
+			margin: 0;
+		}
+	</style>
+</head>
+
+<body>
+
+	<script type="text/javascript">
+
+
+
+//new phaser game. Size relates to frame size in browser:
+		var game = new Phaser.Game(1062, 600, Phaser.AUTO, '', {
+			preload: preload,
+			create: create,
+			update: update
+		});
+
+		function preload() {
+			game.load.image('sky', 'assets/sky.png');
+			game.load.image('ground', 'assets/ground.png');
+			game.load.image('hazelnut', 'assets/hazelnut-small.png');
+			game.load.spritesheet('dude', 'assets/dude.png', 32, 48);
+			game.load.spritesheet('flyingCrow', 'assets/crow-flying.png', 44, 54, 12);
+			game.load.physics('groundPhysics', 'assets/ground.json');
+			game.load.image('platform', 'assets/platform.png');
+			game.load.image('treeTrunk', 'assets/tree-trunk.png');
+			game.load.image('hole', 'assets/hole.png');
+			game.load.image('leftBranch', 'assets/left-branch.png');
+			game.load.image('rightBranch', 'assets/right-branch.png');
+			game.load.image('wall', 'assets/wall.png');
+			game.load.image('roof', 'assets/roof.png');
+			game.load.image('box', 'assets/sign_blank.png');
+		}
+
+		var player;
+		var ground;
+		var cursors;
+		var sky;
+		var platform;
+		var branches;
+		var hole;
+		var hazelnuts;
+		var hazelnutCount = 15;
+		var hazelnutPicked = null;
+		var hazelnutHidden;
+		var hazelnutConstraint = null;
+		var facing = 'left';
+		var yAxis = p2.vec2.fromValues(0, 1);
+		var ctrl;
+		var chasingCrowIndex = undefined;
+		var crowCount = 1;
+		var crows = [crowCount];
+
+		var crowGroup;
+		var crow;
+		var crowPickedHazelnut;
+
+		var text;
+		var hazelnutCounter = 0;
+
+		var tweens = [20];
+		var loops = [20];
+		var chaseDistance = undefined;
+		var distanceConstraint;
+
+		var chaseSpeed = 0.03;
+		var crowYForce = 0.5;
+
+
+		function create() {
+
+			game.physics.startSystem(Phaser.Physics.P2JS);
+			game.world.setBounds(0, 0, 1920, 1080, true);
+			game.physics.p2.gravity.y = 500;
+			game.physics.p2.world.defaultContactMaterial.friction = 3;
+			game.physics.p2.world.setGlobalStiffness(1e5);
+
+			var worldMaterial = game.physics.p2.createMaterial('worldMaterial');
+			var groundMaterial = game.physics.p2.createMaterial('worldMaterial');
+
+			sky = game.add.tileSprite(0, 0, 1920, 1080, 'sky');
+			sky.fixedToCamera = true;
+
+			createTrees(game);
+
+
+
+
+
+
+
+
+
+createSquirrelHouse(game);
+
+
+			player = game.add.sprite(200, 200, 'dude');
+			player.animations.add('left', [0, 1, 2, 3], 10, true);
+			player.animations.add('right', [5, 6, 7, 8], 10, true);
+			game.physics.p2.enable(player, false);
+			player.name = 'player';
+			player.body.fixedRotation = true;
+			player.body.damping = 0.3;
+			player.body.collideWorldBounds = true;
+			var playerMaterial = game.physics.p2.createMaterial('spriteMaterial', player.body);
+
+			var crowDirections = ['left', 'right'];
+
+			crowGroup = game.add.group();
+			for (var i = 0; i < crowCount; i++) {
+				crow = crowGroup.create(game.world.randomX, game.world.randomY, 'flyingCrow');
+				game.physics.p2.enable(crow, false);
+				crow.animations.add('left', [6, 7, 8, 9, 10, 11], 10, true);
+				crow.animations.add('right', [0, 1, 2, 3, 4, 5], 10, true);
+				crow.animations.play(crowDirections[game.rnd.integerInRange(0, 1)], 10, true);
+				crow.body.fixedRotation = true;
+				crow.body.mass = 0.001;
+
+				crow.name = 'crow';
+				//loops[i] = game.time.events.loop(game.rnd.integerInRange(200, 1000), function(crow) {
+				// tweens[i] = game.add.tween(crow);
+				//tweens[i].to({
+				//	 x: this.game.world.randomX,
+				//	 y: this.game.world.randomY
+				// }, 2750, Phaser.Easing.Quadratic.InOut, true);
+				//}, this, crow);
+			}
+
+			/*for (var i = 0; i < crowCount; i++) {
+				if(chasingCrowIndex && chasingCrowIndex == i) {
+					console.log('skip crow: ' + chasingCrowIndex);
+					continue;
+				}
+				crows[i] = game.add.sprite(this.game.world.randomX, this.game.world.randomY, 'flyingCrow');
+				crows[i].animations.add('left', [6, 7, 8, 9, 10, 11], 10, true);
+				crows[i].animations.add('right', [0, 1, 2, 3, 4, 5], 10, true);
+				crows[i].animations.play(crowDirections[game.rnd.integerInRange(0, 1)], 10, true);
+				crows[i].name = 'crow';
+					 loops[i] = game.time.events.loop(game.rnd.integerInRange(200, 1000), function(crow) {
+						tweens[i] = game.add.tween(crow);
+						tweens[i].to({
+							x: this.game.world.randomX,
+							y: this.game.world.randomY
+						}, 2750, Phaser.Easing.Quadratic.InOut, true);
+					}, this, crows[i]);
+				}; */
+
+
+			var ground = game.add.sprite(960, 880, 'ground');
+			game.physics.p2.enable(ground, false);
+			ground.body.clearShapes();
+			ground.body.loadPolygon('groundPhysics', 'ground');
+			ground.body.static = true;
+			ground.body.setMaterial(groundMaterial);
+
+			var wall = game.add.sprite(-5, 0, 'wall');
+			game.physics.p2.enable(wall, false);
+			wall.body.static = true;
+			wall.body.setMaterial(groundMaterial);
+			wall = game.add.sprite(-5, 1000, 'wall');
+			game.physics.p2.enable(wall, false);
+			wall.body.static = true;
+			wall.body.setMaterial(groundMaterial);
+			wall = game.add.sprite(1919, 0, 'wall');
+			game.physics.p2.enable(wall, false);
+			wall.body.static = true;
+			wall.body.setMaterial(groundMaterial);
+			wall = game.add.sprite(1919, 999, 'wall');
+			game.physics.p2.enable(wall, false);
+			wall.body.static = true;
+			wall.body.setMaterial(groundMaterial);
+
+			var roof = game.add.sprite(0, -5, 'roof');
+			game.physics.p2.enable(roof, false);
+			roof.body.static = true;
+			roof.body.setMaterial(groundMaterial);
+			roof = game.add.sprite(1000, -5, 'roof');
+			game.physics.p2.enable(roof, false);
+			roof.body.static = true;
+			roof.body.setMaterial(groundMaterial);
+			roof = game.add.sprite(2000, -5, 'roof');
+			game.physics.p2.enable(roof, false);
+			roof.body.static = true;
+			roof.body.setMaterial(groundMaterial);
+
+			hazelnuts = game.add.group();
+			hazelnuts.enableBody = true;
+			//game.physics.p2.enable(hazelnuts, true);
+			hazelnuts.physicsBodyType = Phaser.Physics.P2JS;
+
+			for (var i = 0; i < hazelnutCount; i++) {
+				var hazelnut = hazelnuts.create(game.world.randomX, 10, 'hazelnut');
+				game.physics.p2.enable(hazelnut, false);
+
+				hazelnut.body.setCircle(25);
+				hazelnut.body.fixedRotation = false;
+				hazelnut.body.damping = 0.1;
+				hazelnut.body.mass = 0.1;
+				hazelnut.name = 'hazelnut';
+			}
+
+			game.physics.p2.setPostBroadphaseCallback(checkCollision, this);
+
+
+			createPlatforms(game);
+
+
+
+			var groundPlayerCM = game.physics.p2.createContactMaterial(playerMaterial, worldMaterial, {
+				friction: 0.2
+			});
+			var groundWorldCM = game.physics.p2.createContactMaterial(playerMaterial, groundMaterial, {
+				friction: 0.1
+			});
+			var groundWorldCM = game.physics.p2.createContactMaterial(worldMaterial, groundMaterial, {
+				friction: 0.0
+			});
+
+			game.camera.follow(player);
+
+
+			cursors = game.input.keyboard.createCursorKeys();
+			ctrl = game.input.keyboard.addKey(Phaser.Keyboard.CONTROL);
+
+
+			createScoreboard(game);
+
+
+
+
+
+		}
+
+		function releaseHazelnut() {
+			if (hazelnutPicked != null) {
+				console.log('inside space down')
+				game.physics.p2.removeConstraint(hazelnutConstraint);
+				hazelnutPicked.velocity.x = 100;
+				hazelnutPicked.velocity.y = 100;
+				hazelnutPicked = null;
+				hazelnutConstraint = null;
+				chaseDistance = undefined;
+				chasingCrowIndex = undefined;
+				chasingSpeed = 0.04;
+				console.log('hazelnut removed ' + hazelnutPicked);
+			}
+		}
+
+
+
+
+		function checkCollision(body1, body2) {
+			if (body1 && body2) {
+				if (body1.sprite && body2.sprite) {
+					if ((body1.sprite.name === 'player' && body2.sprite.name === 'platform') || (body1.sprite.name === 'platform' && body2.sprite.name === 'player') || (body1.sprite.name === 'hazelnut' && body2.sprite.name === 'platform') || (body1.sprite.name ===
+							'platform' && body2.sprite.name === 'hazelnut')) {
+						if (player.body.velocity.y < 0) {
+							return false;
+						}
+					} else if (((body1.sprite.name === 'player' && body2.sprite.name === 'hazelnut') || (body1.sprite.name === 'hazelnut' && body2.sprite.name === 'player')) && ctrl.isDown && !hazelnutConstraint) {
+						console.log('hazelnut picked');
+						hazelnutConstraint = game.physics.p2.createLockConstraint(body1, body2, [5, 5], 0);
+						hazelnutPicked = (body1.sprite.name === 'hazelnut') ? body1 : body2;
+						chaseSpeed = 0.1;
+					} else if (hazelnutPicked && ((body1 === hazelnutPicked && body2.sprite.name === 'crow') || (body2 === hazelnutPicked && body1.sprite.name === 'crow'))) {
+						crowPickedHazelnut = game.physics.p2.createLockConstraint(body1, body2, [0, 0], 0);
+						console.log('crow catched hazelnut' + crowPickedHazelnut);
+						game.physics.p2.removeConstraint(hazelnutConstraint);
+						console.log('increase y force');
+						hazelnutPicked.mass = 0.00000001;
+						//crowYForce += 1000;
+						console.log('player lost hazelnut' + hazelnutConstraint);
+					} else if (hazelnutPicked && ((body1.sprite.name === 'hole' && body2 === hazelnutPicked) || (body2.sprite.name === 'hole' && body1 === hazelnutPicked))) {
+						console.log('hazelnut is near the hole!')
+						hideHazelnut(hazelnutPicked);
+						hazelnutCounter ++;
+						updateText();
+					}
+				}
+			}
+			return true;
+
+		}
+
+		function update() {
+
+			crowGroup.forEachAlive(crowFly, this);
+			//if (cursors.left.isDown) {ship.body.rotateLeft(100);}   //ship movement
+			//else if (cursors.right.isDown){ship.body.rotateRight(100);}
+			//else {ship.body.setZeroRotation();}
+			//if (cursors.up.isDown){ship.body.thrust(400);}
+			//else if (cursors.down.isDown){ship.body.reverse(400);}
+
+
+			if (cursors.left.isDown) {
+				player.body.moveLeft(150);
+				if (checkIfCanJump())
+					player.animations.play('left');
+				else {
+					player.frame = 1;
+				}
+			} else if (cursors.right.isDown) {
+				player.body.moveRight(150);
+				if (checkIfCanJump())
+					player.animations.play('right')
+				else {
+					player.frame = 6;
+				}
+			} else if (cursors.up.isDown) {
+				//	console.log('up!!!');
+				player.body.velocity.x = 0;
+				player.animations.stop();
+
+				if (checkIfCanJump()) {
+					//  Stand still
+					player.frame = 4;
+				} else {
+					if (cursors.left.isDown) {
+						player.frame = 1;
+					} else if (cursors.right.isDown) {
+						player.frame = 6;
+					}
+				}
+			}
+			if (cursors.up.isDown && checkIfCanJump()) {
+				//player.body.velocity.y = -350;
+				player.body.moveUp(350);
+				player.animations.stop();
+			}
+
+			if (ctrl.isUp && hazelnutConstraint) {
+				releaseHazelnut();
+			}
+			if (chasingCrowIndex) {
+				crows[chasingCrowIndex].position.x
+				if (crows[chasingCrowIndex].position.x > player.position.x) {
+					crows[chasingCrowIndex].position.x -= 10;
+				} else {
+					crows[chasingCrowIndex].position.x += 10;
+				}
+
+				if (crows[chasingCrowIndex].position.y > player.position.y) {
+					crows[chasingCrowIndex].position.y -= 10;
+				} else {
+					crows[chasingCrowIndex].position.y += 10;
+				}
+
+				//console.log('chase: ' + crows[chasingCrowIndex].position.x + " " + crows[chasingCrowIndex].position.y
+				//+ " " + chasingCrowIndex);
+			}
+		}
+
+		function updateText() {
+		  //  hazelnutCounter++;
+		    text.setText("You have collected " + hazelnutCounter + " hazelnuts!");
+		}
+
+
+		function hideHazelnut(hazelnut) {
+				hazelnut.sprite.kill();
+			//hazelnut.destroy();
+			//hazelnutPicked = null;
+			console.log('hazelnut hidden in a hole!!!');
+		}
+
+		function checkIfCanJump() {
+			var result = false;
+
+			for (var i = 0; i < game.physics.p2.world.narrowphase.contactEquations.length; i++) {
+				var c = game.physics.p2.world.narrowphase.contactEquations[i];
+				if (c.bodyA === player.body.data || c.bodyB === player.body.data) {
+					var d = p2.vec2.dot(c.normalA, yAxis);
+					if (c.bodyA === player.body.data) {
+						d *= -1;
+					}
+					if (d > 0.5) {
+						result = true;
+					}
+				}
+			}
+			return result;
+		}
+
+
+		function crowFly(crow) {
+			accelerateToObject(crow, player, chaseSpeed);
+		}
+
+		function accelerateToObject(obj1, obj2, speed) {
+			var angle = Math.atan2(obj2.y - obj1.y, obj2.x - obj1.x);
+			obj1.body.rotation = angle + game.math.degToRad(90); // correct angle of angry bullets (depends on the sprite used)
+			obj1.body.force.x = Math.cos(angle) * speed; // accelerateToObject
+			obj1.body.force.y = Math.sin(angle) * speed;
+			obj1.body.force.y -= crowYForce;
+		}
+
+
+
+	</script>
+
+</body>
+
+</html>

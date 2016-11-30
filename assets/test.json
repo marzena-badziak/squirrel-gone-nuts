@@ -1,0 +1,11 @@
+{ 
+    
+    "world": [
+        
+        {
+            "density": 2, "friction": 0, "bounce": 0, 
+            "filter": { "categoryBits": 1, "maskBits": 65535 },
+            "shape": [   3048, 810  ,  3063, 832  ,  1303, 819  ,  1302, 792  ]
+        }
+    ]
+}

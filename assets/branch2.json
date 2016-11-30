@@ -1,0 +1,21 @@
+{ 
+    
+    "world": [
+        
+        {
+            "density": 2, "friction": 0, "bounce": 0, 
+            "filter": { "categoryBits": 1, "maskBits": 65535 },
+            "shape": [   386, 440  ,  459, 464  ,  451, 476  ,  382, 463  ]
+        } ,
+        {
+            "density": 2, "friction": 0, "bounce": 0, 
+            "filter": { "categoryBits": 1, "maskBits": 65535 },
+            "shape": [   459, 464  ,  519, 466  ,  514, 472  ,  451, 476  ]
+        } ,
+        {
+            "density": 2, "friction": 0, "bounce": 0, 
+            "filter": { "categoryBits": 1, "maskBits": 65535 },
+            "shape": [   514, 472  ,  519, 466  ,  564, 455  ]
+        }
+    ]
+}

@@ -9,7 +9,9 @@
 	<script src="js/create.js"></script>
 	<script src="js/crows.js"></script>
 	<script src="js/fox.js"></script>
-
+	<script src="bower_components/jquery/dist/jquery.min.js"></script>
+	<script src="js/app.js"></script>
+<link rel="stylesheet" href="bower_components/font-awesome/css/font-awesome.min.css">
   <link rel="stylesheet" href="css/style.css">
 </head>
 
@@ -20,27 +22,72 @@
 		</div>
 	</header>
 <div class="container">
+		<div class="content">
+			<nav>
+
+				<div class="menu play">play!</div>
+					<div class="text play">
+						<img src="assets/hazelnut-small.png">
+						<p>Collect hazelnuts and hide them in your house on a tree!</p>
+						<img src="assets/cursors.png">
+						<p>Use <b>arrows</b> to move around the forest.</p>
+						<img src="assets/ctrl.png">
+						<p>Press and hold <b>ctrl</b> to catch a hazelnut and carry it.</p>
+						<img src="assets/crow.png">
+						<p>Awoid these nasty crows. They can steal your nut!</p>
+						<img src="assets/fox-icon.png">
+						<p>Beware of a bloody fox...</p>
+						<img src="assets/mushrooms.png">
+						<p>Experiment with mushrooms and see what happens... :)</p>
+					</div>
+
+				<div class="menu aboutGame">about game</div>
+					<div class="text aboutGame hide">
+						<p>Game built on Phaser 2.2.2 library</p>
+						<p>Physics used: P2JS</p>
+
+						<p>Special effects:</p>
+						<ul>
+							<li>Jumping through the tree branches</li>
+							<li>Following the player, if within a range</li>
+							<li>Catching and stealing nuts using lock constraints</li>
+							<li>Accelerating / switching off gravity after eating mushrooms</li>
+						</ul>
+					</div>
+
+				<div class="menu credits">credits</div>
+					<div class="text credits hide">
+						<p>All these lovely assets used in this game come from the <a href="http://http://www.glitchthegame.com/" target="_blank">Glitch</a> game and have been released to public domain by authors. Thanks!</p>
+
+
+						<p>Fractal sky by: Irina_Pechkareva, public domain</p>
+						<p>Galaxy photo by: NASA, public domain</p>
+
+						<p>Help and support: Dariusz Luber/Coders Lab</p>
+						<p>Sources: <br>Phaser<br>http://www.html5gamedevs.com/</p>
+				</div>
+
+				<div class="menu aboutMe">about me</div>
+					<div class="text aboutMe hide">
+						<p>My gitHub</p>
+						<p>My linkedIn</p>
+
+						<p>email: <a href="mailto:marzena.badziak@gmail.com">marzena.badziak@gmail.com</a></p>
+					</div>
+			</nav>
+		</div>
 
 
 		<div id="phaser-game" class="ps-top-to-bottom">
 		</div>
 
-
-
-
 </div>
+
 <footer>
 	<div class="container">
-		<nav>
-			<a href="index.html">play</a> |
-			<a href="#">about game</a> |
-			<a href="#">credits</a> |
-			<a href="#">about me</a>
-		</nav>
+		This is footer
 	</div>
 </footer>
 
-
 </body>
-
 </html>

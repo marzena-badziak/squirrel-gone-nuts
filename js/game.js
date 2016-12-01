@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", function() {
 //main game javasript file
 
 //new phaser game. Size relates to frame size in browser:
-		var game = new Phaser.Game(900, 500, Phaser.AUTO, 'phaser-game', {
+		var game = new Phaser.Game(700, 500, Phaser.AUTO, 'phaser-game', {
 			preload: preload,
 			create: create,
 			update: update,

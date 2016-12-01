@@ -13,3 +13,5 @@ node_modules/
 dist/
 /npm-debug.log
 out/
+
+other-assets/

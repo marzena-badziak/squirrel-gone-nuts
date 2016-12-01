@@ -1,0 +1,11 @@
+{ 
+    
+    "roof": [
+        
+        {
+            "density": 2, "friction": 0, "bounce": 0, 
+            "filter": { "categoryBits": 1, "maskBits": 65535 },
+            "shape": [   0, -12  ,  4890, -5  ,  4890, 28  ,  -9, 32  ]
+        }
+    ]
+}

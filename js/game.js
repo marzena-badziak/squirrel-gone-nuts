@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", function() {
 //main game javasript file
 
 //new phaser game. Size relates to frame size in browser:
-		var game = new Phaser.Game(1000, 600, Phaser.AUTO, 'phaser-game', {
+		var game = new Phaser.Game(900, 500, Phaser.AUTO, 'phaser-game', {
 			preload: preload,
 			create: create,
 			update: update,
@@ -15,12 +15,17 @@ document.addEventListener("DOMContentLoaded", function() {
 			game.load.image('ground', 'assets/world.png');
 			game.load.image('cave-front-left', 'assets/cave-front-left.png');
 			game.load.image('cave-front-right', 'assets/cave-front-right.png');
-			game.load.image('test-branch', 'assets/world2.png');
+		//	game.load.image('test-branch', 'assets/world2.png');
+			game.load.image('branches', "assets/world2.png");
 			game.load.image('hazelnut', 'assets/hazelnut-small.png');
 			game.load.spritesheet('squirrel', 'assets/squirrel.png', 50, 50, 9);
 			game.load.spritesheet('flyingCrow', 'assets/crow-flying.png', 44, 54, 12);
+			game.load.physics('branchPhysics', 'assets/branches.json');
+
 			game.load.physics('groundPhysics', 'assets/ground.json');
-			game.load.physics('branchPhysics', 'assets/test-branch.json');
+		//	game.load.physics('branchPhysics', 'assets/test-branch.json');
+			game.load.image('roof', 'assets/world2.png');
+			game.load.physics('roofPhysics', 'assets/roof.json');
 			game.load.image('hole', 'assets/hole.png');
 			game.load.image('box', 'assets/sign_blank.png');
 
@@ -51,7 +56,7 @@ document.addEventListener("DOMContentLoaded", function() {
 		var branches;
 		var hole;
 		var hazelnuts;
-		var hazelnutCount = 15;
+		var hazelnutCount = 25;
 		var hazelnutPicked = null;
 		var hazelnutHidden;
 		var hazelnutConstraint = null;
@@ -60,7 +65,7 @@ document.addEventListener("DOMContentLoaded", function() {
 		var yAxis = p2.vec2.fromValues(0, 1);
 		var ctrl;
 		var chasingCrowIndex = undefined;
-		game.crowCount = 3;
+		game.crowCount = 10;
 		var crows = [game.crowCount];
 		game.crowGroup;
 		var crow;
@@ -85,12 +90,12 @@ document.addEventListener("DOMContentLoaded", function() {
 			//create game with game world boundaries:
 			game.physics.startSystem(Phaser.Physics.P2JS);
 			game.world.setBounds(0, 0, 5000, 1000, true);
-			game.physics.p2.gravity.y = 500;
-			game.physics.p2.world.defaultContactMaterial.friction = 1;
+			game.physics.p2.gravity.y = 380;
+			game.physics.p2.world.defaultContactMaterial.friction = 0.1;
 			game.physics.p2.world.setGlobalStiffness(1e5);
 
 		//Turn on impact events for the world, without this we get no collision callbacks
-			game.physics.p2.setImpactEvents(true);
+			//game.physics.p2.setImpactEvents(true);
 
 			var worldMaterial = game.physics.p2.createMaterial('worldMaterial');
 			var groundMaterial = game.physics.p2.createMaterial('worldMaterial');
@@ -100,23 +105,31 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
 			ground = game.add.sprite(2500, 500, 'ground');
-			game.physics.p2.enable(ground, false);
+			game.physics.p2.enable(ground, true);
 			ground.body.clearShapes();
 			ground.body.loadPolygon('groundPhysics', 'ground');
 			ground.body.static = true;
 			ground.body.setMaterial(groundMaterial);
 
+			var roof = game.add.sprite(2500,500, 'roof');
+			game.physics.p2.enable(roof, true);
+			roof.visible = false;
+			roof.body.clearShapes();
+			roof.body.loadPolygon('roofPhysics', 'roof');
+			roof.body.static = true;
+			roof.body.setMaterial(groundMaterial);
+
 			createSquirrelHouse(game);
 
 		//create player:
-			player = game.add.sprite(1350, 700, 'squirrel');
+			player = game.add.sprite(150, 800, 'squirrel');
 			player.animations.add('left', [5, 6, 7, 8], 10, true);
 			player.animations.add('right', [0, 1, 2, 3], 10, true);
-			game.physics.p2.enable(player, true);
+			game.physics.p2.enable(player, false);
 			player.name = 'player';
 			player.body.setRectangle(20, 20, 0, 10);
 			player.body.fixedRotation = true;
-			player.body.damping = 0.3;
+			player.body.damping = 0.001;
 			player.body.collideWorldBounds = true;
 			var playerMaterial = game.physics.p2.createMaterial('spriteMaterial', player.body);
 
@@ -130,7 +143,7 @@ document.addEventListener("DOMContentLoaded", function() {
 			hazelnuts.physicsBodyType = Phaser.Physics.P2JS;
 
 			for (var i = 0; i < hazelnutCount; i++) {
-				var hazelnut = hazelnuts.create(game.world.randomX, game.world.randomY, 'hazelnut');
+				var hazelnut = hazelnuts.create(game.world.randomX, 100, 'hazelnut');
 				game.physics.p2.enable(hazelnut, false);
 
 				hazelnut.body.setCircle(25);
@@ -199,6 +212,7 @@ document.addEventListener("DOMContentLoaded", function() {
 				chaseDistance = undefined;
 				chasingCrowIndex = undefined;
 				chasingSpeed = 0.04;
+				switchGravity(true);
 				console.log('hazelnut removed ' + hazelnutPicked);
 			}
 		};
@@ -219,6 +233,7 @@ document.addEventListener("DOMContentLoaded", function() {
 						hazelnutConstraint = game.physics.p2.createLockConstraint(body1, body2, [5, 5], 0);
 						hazelnutPicked = (body1.sprite.name === 'hazelnut') ? body1 : body2;
 						chaseSpeed = 0.1;
+						switchGravity(false);
 					} else if (hazelnutPicked && ((body1 === hazelnutPicked && body2.sprite.name === 'crow') || (body2 === hazelnutPicked && body1.sprite.name === 'crow'))) {
 						crowPickedHazelnut = game.physics.p2.createLockConstraint(body1, body2, [0, 0], 0);
 						console.log('crow catched hazelnut' + crowPickedHazelnut);
@@ -256,6 +271,11 @@ document.addEventListener("DOMContentLoaded", function() {
 			return Math.sqrt(Math.pow((x2 - x1), 2) + Math.pow((y2 - y1), 2))
 		};
 
+
+function switchGravity(toggle) {
+	game.physics.p2.applyGravity = toggle;
+}
+
 		function update() {
 
 
@@ -266,10 +286,10 @@ document.addEventListener("DOMContentLoaded", function() {
 				fox.animations.play('right', 30, true);
 			} else {
 					if((player.position.x - fox.position.x) > 5) {
-						fox.body.velocity.x = 200;
+						fox.body.velocity.x = 180;
 						fox.animations.play('right', 30, true);
 					} else if ((player.position.x - fox.position.x) < -5) {
-							fox.body.velocity.x = -200;
+							fox.body.velocity.x = -180;
 							fox.animations.play('left', 30, true);
 						} else  {
 								fox.body.velocity.x = 0;
@@ -290,28 +310,36 @@ document.addEventListener("DOMContentLoaded", function() {
 					game.add.tween(player).to({alpha: 0}, 1000, Phaser.Easing.Linear.None, true);
 					game.add.tween(player).to({alpha: 100}, 1000, Phaser.Easing.Linear.None, true);
 					player.body.velocity.y = -100;
+
 					player.animations.stop();
-
-					game.time.events.add(2000, function(fox) {
-							console.log('inside time event');
-
-						//after game over, a player is removed from the game
-							player.destroy();
-							game.paused = true;
-					}, this);
-
-			//camera stops following player after the player is eaten by the fox
-					game.camera.follow();
 
 					gameOverText.fixedToCamera = true;
 
-					gameOverText	= game.add.text((game.camera.x / 2) - 50, game.camera.y / 2, "Game over...", {
+					gameOverText	= game.add.text(300, 200, "Game over...", {
 									font: "60px Arial",
 									fill: "white",
 									align: "center",
 									stroke: '#000000',
 									strokeThickness: 5
 							});
+							// console.log(gameOverText);
+					// console.log(gameOverText);
+					game.time.events.add(2000, function(fox) {
+							console.log('inside time event');
+//
+						//after game over, a player is removed from the game
+							player.destroy();
+							playerKilled = false;
+						//	game.paused = true;
+							game.state.restart();
+					}, this);
+
+			//camera stops following player after the player is eaten by the fox
+					game.camera.follow();
+
+
+
+
 				};
 
 
@@ -354,9 +382,11 @@ document.addEventListener("DOMContentLoaded", function() {
 				}
 			}
 			if (cursors.up.isDown && checkIfCanJump()) {
-				//player.body.velocity.y = -350;
 				player.body.moveUp(350);
 				player.animations.stop();
+			}
+			if(cursors.down.isDown && !game.physics.applyGravity) {
+				player.body.moveDown(150);
 			}
 
 			if (ctrl.isUp && hazelnutConstraint) {
@@ -397,6 +427,10 @@ document.addEventListener("DOMContentLoaded", function() {
 
 		function checkIfCanJump() {
 			var result = false;
+
+			if(game.physics.p2.applyGravity == false) {
+				return true;
+			}
 
 			for (var i = 0; i < game.physics.p2.world.narrowphase.contactEquations.length; i++) {
 				var c = game.physics.p2.world.narrowphase.contactEquations[i];

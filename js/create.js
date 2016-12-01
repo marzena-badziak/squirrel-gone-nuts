@@ -6,13 +6,13 @@
 
 function createPlatforms(game) {
 
-  platform = game.add.sprite(2500, 500, 'test-branch');
-  game.physics.p2.enable(platform, true);
+  platform = game.add.sprite(2500, 500, 'branches');
+  game.physics.p2.enable(platform, false);
   platform.visible = false;
   platform.body.clearShapes();
   platform.name = 'platform';
   platform.body.static = true;
-  platform.body.loadPolygon('branchPhysics', 'test-branch');
+  platform.body.loadPolygon('branchPhysics', 'branches');
 
 
 };
@@ -44,7 +44,7 @@ function createScoreboard(game) {
 
 function createSquirrelHouse(game) {
 
-  hole = game.add.sprite(2830, 730, 'hole');
+  hole = game.add.sprite(2830, 520, 'hole');
   game.physics.p2.enable(hole, true);
   hole.body.setRectangle(20, 30, 3, 10, 0);
   hole.body.static = true;

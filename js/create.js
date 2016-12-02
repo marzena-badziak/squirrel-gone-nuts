@@ -45,36 +45,33 @@ function createScoreboard(game) {
 function createSquirrelHouse(game) {
 
   hole = game.add.sprite(2830, 520, 'hole');
-  game.physics.p2.enable(hole, true);
+  game.physics.p2.enable(hole, false);
   hole.body.setRectangle(20, 30, 3, 10, 0);
   hole.body.static = true;
   hole.name = 'hole';
-
 
 };
 
 
 function dropLeaves(game) {
 var leaves;
-var numberOfLeaves = 20;
-
-
+var numberOfLeaves = 25;
   leaves = game.add.group();
   leaves.enableBody = true;
   //game.physics.p2.enable(hazelnuts, true);
   leaves.physicsBodyType = Phaser.Physics.P2JS;
-
-
   for (var i = 1; i < numberOfLeaves; i++) {
-  var leaf = leaves.create(getRandomIntInclusive(3700,3900), getRandomIntInclusive(600,300), 'leaf'+getRandomIntInclusive(1, 7));
+  var leaf = leaves.create(getRandomIntInclusive(3700,3900), getRandomIntInclusive(600,800), 'leaf'+getRandomIntInclusive(1, 7));
     game.physics.p2.enable(leaf, true);
-
     leaf.body.setCircle(11);
     leaf.body.fixedRotation = false;
     leaf.body.damping = 0.05;
     leaf.body.mass = 0.05;
     leaf.name = 'leaf';
   };
+};
+
+
 
 
 //usful function to generate random integer within a given range:
@@ -83,7 +80,3 @@ var numberOfLeaves = 20;
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;
   };
-
-
-
-}

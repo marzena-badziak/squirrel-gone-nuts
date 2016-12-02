@@ -62,7 +62,7 @@ body {
   display: flex;
   flex-direction: row;
   margin: 5px auto;
-  border: 1px dotted red;
+  /*border: 1px dotted red;*/
 }
 h1 {
   margin: 0;
@@ -77,9 +77,13 @@ h1 {
   height: 100%;
   font-size: 14px;
 }
+
+.menu:first-child {
+	margin-top: 0;
+}
 #phaser-game {
   margin: 0 10px;
-  height: 520px;
+  height: 570px;
 }
 p {
 margin: 5px 0;
@@ -87,7 +91,7 @@ margin: 5px 0;
 
 .text {
   background-color: #5f821d;
-  padding: 5px 10px;
+  padding: 5px 5px;
   border-radius: 0 10px 10px 10px;
   margin: 0 0 5px 10px;
 }
@@ -163,8 +167,13 @@ li {
 }
 footer .container {
   text-align: right;
-  /*align-self: flex-end;*/
   display: block;
+}
+span {
+	font-size: 12px;
+	font-style: italic;
+	margin: 0;
+	padding: 0;
 }
 
 
